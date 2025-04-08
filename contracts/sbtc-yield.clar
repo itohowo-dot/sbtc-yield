@@ -235,3 +235,39 @@
         (ok (+ amount yield))
     )
 )
+
+;; Risk Management
+
+;; Deactivate a strategy in case of risk events
+(define-public (deactivate-protocol (protocol-id uint))
+    (begin
+        (asserts! (is-contract-owner tx-sender) ERR-UNAUTHORIZED)
+        (asserts! (is-valid-protocol-id protocol-id) ERR-INVALID-INPUT)
+        (map-set supported-protocols 
+            {protocol-id: protocol-id} 
+            (merge 
+                (unwrap! 
+                    (map-get? supported-protocols {protocol-id: protocol-id}) 
+                    ERR-INVALID-PROTOCOL
+                )
+                {active: false}
+            )
+        )
+        (var-set total-protocols (- (var-get total-protocols) u1))
+        (ok true)
+    )
+)
+
+;; Protocol Initialization
+
+;; Bootstrap initial yield strategies
+(define-public (initialize-protocols)
+    (begin
+        (try! (add-protocol u1 "Stacks Yield Protocol" u500 u20))  ;; 5.00% APY, 20% max allocation
+        (try! (add-protocol u2 "Bitcoin Lightning Yield" u750 u30)) ;; 7.50% APY, 30% max allocation
+        (ok true)
+    )
+)
+
+;; Initialize Contract with default protocols
+(try! (initialize-protocols))
