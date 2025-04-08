@@ -44,3 +44,46 @@
         active: bool                              ;; Strategy status
     }
 )
+
+;; User position tracker
+(define-map user-deposits
+    {user: principal, protocol-id: uint} 
+    {
+        amount: uint,                             ;; sBTC-denominated
+        deposit-time: uint                        ;; Block height timestamp
+    }
+)
+
+;; Strategy TVL tracker
+(define-map protocol-total-deposits
+    {protocol-id: uint} 
+    {total-deposit: uint}
+)
+
+;; Protocol State
+(define-data-var total-protocols uint u0)         ;; Active strategy counter
+
+;; Input Validation Functions
+
+(define-private (is-valid-protocol-id (protocol-id uint))
+    (and (> protocol-id u0) (<= protocol-id MAX-PROTOCOLS))
+)
+
+(define-private (is-valid-protocol-name (name (string-ascii 50)))
+    (and 
+        (> (len name) u0) 
+        (<= (len name) MAX-PROTOCOL-NAME-LENGTH)
+    )
+)
+
+(define-private (is-valid-base-apy (base-apy uint))
+    (<= base-apy MAX-BASE-APY)
+)
+
+(define-private (is-valid-allocation-percentage (percentage uint))
+    (and (> percentage u0) (<= percentage MAX-ALLOCATION-PERCENTAGE))
+)
+
+(define-private (is-valid-deposit-amount (amount uint))
+    (and (> amount u0) (<= amount MAX-DEPOSIT-AMOUNT))
+)
